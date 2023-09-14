@@ -23,13 +23,19 @@ void WriteASM(std::string name, std::string assembly) {
   file_stream.close();
 
   std::stringstream asmcmd;
-  asmcmd << "nasm -fmacho64 " << name << ".asm -o " << name << ".o";
   std::stringstream ldcmd;
+
+#ifdef __APPLE__
+  asmcmd << "nasm -fmacho64 " << name << ".asm -o " << name << ".o";
   ldcmd << "ld " << name << ".o "
         << "-o " << name
         << " -macosx_version_min 11.0 "
            "-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/ "
            "-lSystem";
+#elif __linux
+  asmcmd << "nasm -felf64" << name << ".asm -o " << name << ".o";
+  ldcmd << "ld -o " << name << " " << name << ".o";
+#endif
 
   system(asmcmd.str().c_str());
   system(ldcmd.str().c_str());
